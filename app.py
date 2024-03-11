@@ -4,8 +4,9 @@ import re
 import base64
 
 from PIL import Image
-from flask import Flask, request, render_template, flash, redirect
+from flask import Flask, request, render_template, flash, redirect, jsonify
 from werkzeug.utils import secure_filename
+
 
 from tf_model_helper import TFModel
 
@@ -35,26 +36,57 @@ def allowed_file(filename):
 def home():
     return render_template('index.html')
 
+###### Commented Route for render_template
+
+# @app.route('/upload', methods=['POST'])
+# def upload_image():
+#     # Check if the post request has the file part
+#     if 'file' not in request.files:
+#         flash('No file part')
+#         return redirect(request.url)
+
+#     file = request.files['file']
+
+#     # If the user does not select a file, browser also
+#     # submit an empty part without filename
+#     if file.filename == '':
+#         flash('No selected file')
+#         return redirect(request.url)
+
+#     if file and allowed_file(file.filename):
+#         filename = secure_filename(file.filename)
+#         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+#         file.save(file_path)
+        
+#         # Process the uploaded image and get predictions
+#         image = Image.open(file_path)
+#         predictions = TF_MODEL.predict(image)
+
+#         # Remove the uploaded file after processing (optional)
+#         os.remove(file_path)
+
+#         return render_template('result.html', predictions=predictions)
+
+#     return render_template('index.html', error="Invalid file format. Please upload a valid image.")
+
 @app.route('/upload', methods=['POST'])
 def upload_image():
     # Check if the post request has the file part
     if 'file' not in request.files:
-        flash('No file part')
-        return redirect(request.url)
+        return jsonify({'error': 'No file part'})
 
     file = request.files['file']
 
     # If the user does not select a file, browser also
     # submit an empty part without filename
     if file.filename == '':
-        flash('No selected file')
-        return redirect(request.url)
+        return jsonify({'error': 'No selected file'})
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(file_path)
-        
+
         # Process the uploaded image and get predictions
         image = Image.open(file_path)
         predictions = TF_MODEL.predict(image)
@@ -62,9 +94,13 @@ def upload_image():
         # Remove the uploaded file after processing (optional)
         os.remove(file_path)
 
-        return render_template('result.html', predictions=predictions)
+        # Return predictions in JSON format
+        return jsonify({'predictions': predictions})
 
-    return render_template('index.html', error="Invalid file format. Please upload a valid image.")
+    return jsonify({'error': 'Invalid file format. Please upload a valid image.'})
+
+
+
 
 if __name__ == "__main__":
     app.run(host='127.0.0.1', port=8000, debug=True)
