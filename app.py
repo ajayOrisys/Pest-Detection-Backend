@@ -12,7 +12,6 @@ from tf_model_helper import TFModel
 
 app = Flask(__name__, template_folder='templates')
 
-print("Test")
 # Path to signature.json and model file
 ASSETS_PATH = os.path.join(".", "./model")
 TF_MODEL = TFModel(ASSETS_PATH)
