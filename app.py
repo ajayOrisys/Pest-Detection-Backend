@@ -5,12 +5,14 @@ import base64
 
 from PIL import Image
 from flask import Flask, request, render_template, flash, redirect, jsonify
+from flask_cors import CORS, cross_origin
 from werkzeug.utils import secure_filename
 
 
 from tf_model_helper import TFModel
 
 app = Flask(__name__, template_folder='templates')
+CORS(app)
 
 # Path to signature.json and model file
 ASSETS_PATH = os.path.join(".", "./model")
@@ -69,12 +71,15 @@ def home():
 #     return render_template('index.html', error="Invalid file format. Please upload a valid image.")
 
 @app.route('/upload', methods=['POST'])
+@cross_origin()
 def upload_image():
+    print("hey")
     # Check if the post request has the file part
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'})
 
     file = request.files['file']
+    
 
     # If the user does not select a file, browser also
     # submit an empty part without filename
@@ -93,12 +98,17 @@ def upload_image():
         # Remove the uploaded file after processing (optional)
         os.remove(file_path)
 
-        # Return predictions in JSON format
-        return jsonify({'predictions': predictions})
+        # Return predictions in JSON format with CORS headers
+        response = jsonify({'predictions': predictions})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')  # Allow any origin
+        return response
 
     return jsonify({'error': 'Invalid file format. Please upload a valid image.'})
 
-
+@app.route("/test")
+def test():
+    return jsonify({"result": "true"})
 
 
 if __name__ == "__main__":
