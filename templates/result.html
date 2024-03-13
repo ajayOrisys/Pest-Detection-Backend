@@ -7,7 +7,19 @@
 </head>
 <body>
     <h1>Result</h1>
-    <h3>Predictions:</h3>
-    <pre>{{ predictions | tojson | safe }}</pre>
+    <h3>Prediction:</h3>
+    {% if predictions %}
+        {% if predictions.predictions %}
+            {% if predictions.predictions[0] %}
+                <pre>{{ predictions.predictions[0]["label"] }}</pre>
+            {% else %}
+                <p>No predictions available</p>
+            {% endif %}
+        {% else %}
+            <p>No predictions available</p>
+        {% endif %} 
+    {% else %}
+        <p>No predictions available</p>
+    {% endif %}
 </body>
 </html>
